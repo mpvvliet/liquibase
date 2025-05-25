@@ -1,5 +1,6 @@
 package liquibase.diff.output.changelog.core;
 
+import liquibase.Scope;
 import liquibase.change.Change;
 import liquibase.change.core.AddForeignKeyConstraintChange;
 import liquibase.database.Database;
@@ -7,6 +8,7 @@ import liquibase.diff.output.DiffOutputControl;
 import liquibase.diff.output.changelog.AbstractChangeGenerator;
 import liquibase.diff.output.changelog.ChangeGeneratorChain;
 import liquibase.diff.output.changelog.MissingObjectChangeGenerator;
+import liquibase.logging.Logger;
 import liquibase.structure.DatabaseObject;
 import liquibase.structure.core.*;
 import liquibase.util.StringUtil;
@@ -74,6 +76,17 @@ public class MissingForeignKeyChangeGenerator extends AbstractChangeGenerator im
                     change.setReferencedTableSchemaName(fk.getPrimaryKeyTable().getSchema().getName());
                 }
             }
+        }
+
+        // Check if primary key columns are empty and log a warning if they are
+        if (fk.getPrimaryKeyColumns() == null || fk.getPrimaryKeyColumns().isEmpty()) {
+            Logger log = Scope.getCurrentScope().getLog(MissingForeignKeyChangeGenerator.class);
+            log.warning(String.format("Foreign key '%s' on table '%s' references table '%s' which may not exist or has no primary key columns. " +
+                    "This will result in empty referencedColumnNames in the generated changelog. " +
+                    "Please verify that the referenced table exists and has a primary key defined.",
+                    fk.getName() != null ? fk.getName() : "<unnamed>",
+                    fk.getForeignKeyTable() != null ? fk.getForeignKeyTable().getName() : "<unknown>",
+                    fk.getPrimaryKeyTable() != null ? fk.getPrimaryKeyTable().getName() : "<unknown>"));
         }
 
         change.setReferencedColumnNames(StringUtil.join(fk.getPrimaryKeyColumns(), ",", (StringUtil.StringUtilFormatter<Column>) Column::getName));
