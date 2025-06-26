@@ -120,6 +120,23 @@ public class LoadUpdateDataChangeTest extends StandardChangeTest {
         assert statements[0].getOnlyUpdate()
     }
 
+    def "loadUpdateData ignores blank lines in CSV"() throws Exception {
+        when:
+        MockDatabase database = new MockDatabase()
+        database.setConnection((DatabaseConnection) null)
+
+        LoadUpdateDataChange change = new LoadUpdateDataChange()
+        change.setSchemaName("SCHEMA_NAME")
+        change.setTableName("TABLE_NAME")
+        change.setFile("liquibase/change/core/sample.data.blankline.csv")
+
+        SqlStatement[] statements = change.generateStatements(database)
+
+        then:
+        statements.length == 2
+        statements.each { assert it instanceof InsertOrUpdateStatement }
+    }
+
     @Unroll
     def "generateChecksum produces different values with each field - #version"(ChecksumVersion version, String originalChecksum, String updatedChecksum) {
         when:

@@ -44,8 +44,11 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.BufferedReader;
+import java.io.StringReader;
 import java.nio.file.InvalidPathException;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
@@ -736,6 +739,14 @@ public class LoadDataChange extends AbstractTableChange implements ChangeWithCol
             stream = new GZIPInputStream(stream);
         }
         Reader streamReader = StreamUtil.readStreamWithReader(stream, getEncoding());
+
+        // Normalize line endings and remove blank/comment lines to avoid opencsv
+        // interpreting a blank line as end-of-file (see GH-7020)
+        List<String> filteredLines = new BufferedReader(streamReader).lines()
+                .filter(l -> StringUtils.isNotBlank(l))
+                .filter(l -> StringUtils.isEmpty(commentLineStartsWith) || !l.startsWith(commentLineStartsWith))
+                .collect(Collectors.toList());
+        streamReader = new StringReader(String.join("\n", filteredLines));
 
         char quotchar;
         if (StringUtils.trimToEmpty(this.quotchar).isEmpty()) {
