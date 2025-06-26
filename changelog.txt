@@ -159,6 +159,7 @@ Snowflake timestamp improvements. This release fixes breaks and provides enhance
 - (#6710) Handle changes skipped due to OS mismatch DAT-19334 @wwillard7800
 
 ### Bug Fixes
+- (#7043) Fix rows affected not shown for custom SQL DML statements @mvanvliet
 - (#6900) INT-185 - Solving the situation where the customer tries to connect t @CharlesQueiroz
 - (#6838) Upon Evaluation of changeLogPropertyDefinied precondition also include local properties of nested changesets. @2fxprogeeme
 - (#6875) Fix Oracle regression from splitStatements:false change DAT-19983 @wwillard7800

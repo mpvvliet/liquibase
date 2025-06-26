@@ -43,6 +43,9 @@ public class JdbcExecutor extends AbstractExecutor {
 
     public static final String SHOULD_UPDATE_ROWS_AFFECTED_SCOPE_KEY = "shouldUpdateRowsAffected";
     public static final String ROWS_AFFECTED_SCOPE_KEY = "rowsAffected";
+    private static final Pattern DML_PATTERN = Pattern.compile(
+            "^\\s*(?:SELECT\\b|INSERT\\b|UPDATE\\b|DELETE\\b|MERGE\\b).*",
+            Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
 
     /**
      * Return the name of the Executor
@@ -479,8 +482,10 @@ public class JdbcExecutor extends AbstractExecutor {
         }
 
         private boolean isDML(String statement) {
-            Pattern dmlPattern = Pattern.compile("^\\s*?(SELECT\\s|INSERT\\s|UPDATE\\s|DELETE\\s|MERGE\\s)(.*)");
-            Matcher m = dmlPattern.matcher(statement);
+            if (statement == null) {
+                return false;
+            }
+            Matcher m = DML_PATTERN.matcher(statement);
             return m.matches();
         }
 
