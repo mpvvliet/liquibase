@@ -58,4 +58,17 @@ public class JdbcExecutorTest {
         assertEquals("(0) ", new JdbcExecutor().getErrorCode(new SQLException()));
     }
 
+    @Test
+    public void isDmlShouldBeCaseInsensitive() throws Exception {
+        JdbcExecutor executor = new JdbcExecutor();
+        Class<?> clazz = Class.forName("liquibase.executor.jvm.JdbcExecutor$ExecuteStatementCallback");
+        java.lang.reflect.Constructor<?> ctor = clazz.getDeclaredConstructor(JdbcExecutor.class, liquibase.statement.SqlStatement.class, java.util.List.class);
+        ctor.setAccessible(true);
+        Object callback = ctor.newInstance(executor, null, java.util.Collections.emptyList());
+        java.lang.reflect.Method method = clazz.getDeclaredMethod("isDML", String.class);
+        method.setAccessible(true);
+        boolean result = (Boolean) method.invoke(callback, "insert into t values (1)");
+        assertTrue(result);
+    }
+
 }
